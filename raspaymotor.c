@@ -1,18 +1,5 @@
 /*モータ制御*/
 
-/*ソースコードを書いていて思ったこと*/
-
-/*１．モータ構造体にIDで番号を持たせたほうがいいのでは?*/
-/*IDで持たせれば、motor_kindは必要なくなり、どこかで左右のモータを判定する必要があってもIDでわかる。*/
-
-/*２．出力PIN情報は、初期化時に持たせておいたほうが良いのではないか?*/
-/*(ここよくわかっていない)STOPは、前進及び後進のPINにPWM出力をすることで停止する。(と自分は理解しています。)*/
-/*ならば、あらかじめ左右のモータのPIN番号は初期化時に設定しておいて、PWM出力でどちらに出力を行うか、
-もしくは、Pin状態を削除して、固定値を入れるようにしたほうが良いのではないか?*/
-
-/*３．上記の問題を勝手にやったもの=raspaymotor2.c及び詳細設計データ構造2.asta*/
-
-
 #include <wiringPi.h>
 #include <stdio.h>
 
@@ -25,20 +12,19 @@
 #define LEFTMOTORADVANCEPIN        //前進
 #define LEFTMOTORREVERSEPIN        //後進
 
-#define STOPPIN 0
-
 /*コマンドチェック用*/
 #define COMMANDCHECK_MIN 2
 #define COMMANDCHECK_MAX 8
 #define ROTATIONBORDER 5
 
 /*回転方向*/
-#define ADVANCE 0
-#define REVERSE 1
+#define ADVANCE 1
+#define REVERSE 2
 
 /*初期化用*/
 #define CHARDATA0 0
 #define INTDATA0 0
+#define SHORT0 0
 
 /*出力PWM*/
 #define PWMOUT0 0
@@ -54,7 +40,6 @@ typedef enum
     OUTLEVEL2,
     OUTLEVEL3,
 }
-
 
 /*エラーの種類*/
 typedef enum
@@ -76,14 +61,15 @@ typedef enum
     MOTOR_MAX
 }
 
-
 /*モータ状態情報の構造体*/
 typedef struct motor_state_info 
 {
+    unsigned short id;					//tt
     unsigned short level;
     unsigned short rotation_direction;
     unsigned short pwm_out_value;
-    unsigned short pwm_pin;
+    unsigned short pwm_advance_pin;		//tt
+	unsigned short pwm_reverse_pin;		//tt
 }motor_state_info;
 
 /*コマンド情報の構造体*/
@@ -108,6 +94,23 @@ int Motor_Prepare(command_info command, motor_state_info motor_state , char moto
 int Motor_CommandTrans(char command_level,motor_state_info* motor_state)
 int Motor_OutCalc(motor_state_info* motor_state)
 
+/*モータ情報の初期化は全体のメイン処理の中で*/
+/*左モータ情報の初期化*/
+int Motor_Init_Left(motor_state_info* motor_state_left )
+{
+	motor_state_left -> id = MOTOR_LEFT;
+	motor_state_left -> pwm_advance_pin = LEFTMOTORADVANCEPIN;
+	motor_state_left -> pwm_reverse_pin = LEFTMOTORREVERSEPIN;
+}
+
+/*右モータ情報の初期化*/
+int Motor_Init_Right(motor_state_info* motor_state_right)
+{
+	motor_state_right -> id = MOTOR_RIGHT;
+	motor_state_right -> pwm_advance_pin = RIGHTMOTORADVANCEPIN;
+	motor_state_right -> pwm_reverse_pin = RIGHTMOTORREVERSEPIN;
+}
+/*ここまで*/
 
 
 /*モータ制御のメイン処理を実施する。*/
@@ -118,24 +121,28 @@ int Motor_main(command_info* command)
     motor_state_info motor_state_left;
     motor_state_info motor_state_right;
 
+    motor_state_left -> id = MOTOR_LEFT;
+    motor_state_right -> id = MOTOR_RIGHT;
     error_check = NONEERROR;
     
+	Motor_Init_Left(MOTOR_LEFT);
+	Motor_Init_Right(motor_state_right);
+	
     Motor_CommandCheck(command);
     
     if (error_check = NONEERROR)
     {
-        Motor_Prepare(command,motor_state_left,MOTOR_LEFT);
+        Motor_Prepare(command,motor_state_left);
     }
 
     if (error_check = NONEERROR)
     {
-        Motor_Prepare(command,motor_state_right,MOTOR_RIGHT);
+        Motor_Prepare(command,motor_state_right);
     }
     
     return 0;
     
 }
-
 
 /*左のコマンド値、右のコマンド値が2～8の値で収まっていることをチェックする。*/
 /*不備がある場合はエラー値を返す、ない場合は0を返す。*/
@@ -158,10 +165,9 @@ int Motor_CommandCheck(command)
     
 }
 
-
 /*モータ出力前の標準となる(コマンド処理&出力値計算の実施)*/
 /*左右のモータそれぞれで処理を行う。*/
-int Motor_Prepare(command_info command, motor_state_info motor_state,int motor_kind)
+int Motor_Prepare(command_info command, motor_state_info motor_state)
 {
 
     char level;
@@ -170,7 +176,7 @@ int Motor_Prepare(command_info command, motor_state_info motor_state,int motor_k
     error_check = NONEERROR;
     level = CHARDATA0;
     
-    switch (motor_kind)
+    switch (motor_state -> id)
     {
         case MOTOR_LEFT:
             level = command -> left_command;
@@ -220,7 +226,6 @@ int Motor_CommandTrans(char command_level,motor_state_info* motor_state)
     return error_check;
 }
 
-
 /*モータ出力レベルを元にPWM出力値(0～100％)を選出する。*/
 /*出力するPINを設定する。*/
 int Motor_OutCalc(motor_state_info* motor_state)
@@ -246,26 +251,55 @@ int Motor_OutCalc(motor_state_info* motor_state)
             error_check = PWMOUTERROR;
             break;
     }
-
-	
-	/*出力するPIN番号の処理をどうすれば良いか検討中*/
-   
+    else
+    {
+        error_check = PWMOUTCALCERROR;
+    }
+    
     return error_check;
     
 }
 
-
-/*検討中*/
+/**/
 int Motor_Output(motor_state_info* motor_state_left,motor_state_info* motor_state_right)
 {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+	//前進、後進のPIN番号をモータ状態に保持させている
+	if (PWMOUT0 < (motor_state_left -> pwm_out_value))
+	{
+		if ((motor_state_left -> rotation_direction) == ADVANCE)
+		{
+    		pwmWrite( motor_state_left -> pwm_out_value, motor_state_left -> pwm_advance_pin);
+    		pwmWrite( PWMOUT0, motor_state_left -> pwm_reverse_pin);
+		}
+		else if ((motor_state_left -> rotation_direction) == REVERSE)
+		{
+    		pwmWrite( PWMOUT0, motor_state_left -> pwm_advance_pin);
+    		pwmWrite( motor_state_left -> pwm_out_value, motor_state_left -> pwm_reverse_pin);
+		}
+	}
+	else
+	{
+    	pwmWrite( PWMOUT60, motor_state_left -> pwm_advance_pin);
+    	pwmWrite( PWMOUT60, motor_state_left -> pwm_reverse_pin);
+	}
+	
+	
+	if (PWMOUT0 < (motor_state_right -> pwm_out_value))
+	{
+		if ((motor_state_right -> rotation_direction) == ADVANCE)
+		{
+    		pwmWrite( motor_state_right -> pwm_out_value, motor_state_right -> pwm_advance_pin);
+    		pwmWrite( PWMOUT0, motor_state_right -> pwm_reverse_pin);
+		}
+		else if ((motor_state_right -> rotation_direction) == REVERSE)
+		{
+    		pwmWrite( PWMOUT0, motor_state_right -> pwm_advance_pin);
+    		pwmWrite( motor_state_right -> pwm_out_value, motor_state_right -> pwm_reverse_pin);
+		}
+	}
+	else
+	{
+    	pwmWrite( PWMOUT60, motor_state_right -> pwm_advance_pin);
+    	pwmWrite( PWMOUT60, motor_state_right -> pwm_reverse_pin);
+	}
 }
