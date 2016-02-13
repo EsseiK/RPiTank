@@ -1,0 +1,41 @@
+/*
+  コンパイル用コマンド
+  gcc -o camera_test test.c -I/usr/local/include/opencv -lpthread -ldl -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann -lm
+ */
+
+#include <stdio.h>
+#include <cv.h>
+#include <highgui.h>
+
+int main (int argc, char **argv)
+{
+    double w = 640, h = 480;
+    int key;
+    IplImage *frame;
+    CvCapture *capture = cvCreateCameraCapture(-1);
+    if (capture==NULL) {
+        puts("Camera not found.\n");
+        return 0;
+    }
+
+    cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, w);
+    cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, h);
+
+    // ウィンドウを作成する
+    char *windowName = "camera";
+    cvNamedWindow(windowName, CV_WINDOW_AUTOSIZE);
+
+    while (1) {
+        frame = cvQueryFrame(capture);
+        //cvShowImage(windowName, frame);
+
+        key = cvWaitKey(1);
+	if(key==1048689){
+	  break;
+	}
+    }
+    cvSaveImage("./test.png", frame, 0);
+    cvReleaseCapture(&capture);
+    cvDestroyWindow(windowName);
+    return 0;
+}
