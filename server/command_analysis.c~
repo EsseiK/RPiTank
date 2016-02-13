@@ -26,11 +26,6 @@ Command_Info Sock_Command_Analysis(char *recv_data) {
     break;
   case 'C':
     printf("Camera\n");
-    command.large_type     = recv_data[7];
-    command.small_type     = recv_data[8];
-    command.spare3         = recv_data[9];
-    command.OP3            = recv_data[12];
-    command.OP4            = recv_data[13];
     break;
   default:
     printf("ERROR\n");

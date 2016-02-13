@@ -1,19 +1,9 @@
 /*モータ制御*/
-
 #include <wiringPi.h>
-
-/*
-  #include "stdafx.h"
-  #ifndef dprintf(s,...)
-  #define dprintf(s,...) printf("[%s] " s, __func__,__VA_ARGS__)
-  #else
-  #endif
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>// needed for getrusage
 #include "motor.h"
-
 
 /*右モータPIN*/
 #define RIGHTMOTORADVANCEPIN  1      //前進
@@ -87,8 +77,6 @@ int Motor_Init_Right(motor_state_info* motor_state_right)
 
   return 0;
 }
-/*ここまで*/
-
 
 
 /*左のコマンド値、右のコマンド値が2～8の値で収まっていることをチェックする。*/
@@ -114,11 +102,9 @@ int Motor_CommandCheck(Command_Info* command)
     {
       printf("Motor_CommandCheck right_command err %d\r\n",tmpi);
     }
-    
-  return error_check;
-    
-}
 
+  return error_check;
+}
 
 
 /*変換対象のコマンド値をもとにモータ状態レベルと向きを算出し、状態を保持する。*/
@@ -146,7 +132,7 @@ int Motor_CommandTrans(char command_level,motor_state_info* motor_state)
     {
       error_check = COMMANDTRANSERROR;
     }
-    
+
   return error_check;
 }
 
@@ -156,7 +142,7 @@ int Motor_OutCalc(motor_state_info* motor_state)
 {
   int error_check;
   error_check = NONEERROR;
-    
+
   switch(motor_state -> level)
     {
     case OUTLEVEL0:
@@ -175,13 +161,11 @@ int Motor_OutCalc(motor_state_info* motor_state)
       error_check = PWMOUTERROR;
       break;
     }
-    
   //    {
   //        error_check = PWMOUTCALCERROR;
   //    }
-    
+
   return error_check;
-    
 }
 
 /*モータ出力前の標準となる(コマンド処理&出力値計算の実施)*/
@@ -219,13 +203,10 @@ int Motor_Prepare(Command_Info *command, motor_state_info *motor_state)
 	  printf("Motor_OutCalc do %d\r\n",error_check);
         }
     }
-    
   return error_check;
-    
 }
 
 
-/**/
 int Motor_Output(motor_state_info* motor_state_left,motor_state_info* motor_state_right)
 {
   //前進、後進のPIN番号をモータ状態に保持させている
@@ -254,8 +235,7 @@ int Motor_Output(motor_state_info* motor_state_left,motor_state_info* motor_stat
       printf("Motor_Output [left] PWMOUT0==pwm_out_value= %d\r\n",( (int)(motor_state_left -> pwm_out_value) ));
 
     }
-	
-	
+
   if (PWMOUT0 < (motor_state_right -> pwm_out_value))
     {
       printf("Motor_Output [right] PWMOUT0<pwm_out_value= %d\r\n",( (int)(motor_state_right -> pwm_out_value) ));
@@ -284,23 +264,12 @@ int Motor_Output(motor_state_info* motor_state_left,motor_state_info* motor_stat
       printf("Motor_Output [right] PWMOUT0==pwm_out_value= %d\r\n",( (int)(motor_state_right -> pwm_out_value) ));
 
     }
-	
   return 0;
 }
 
-
+/* add hiraoka */
 int Motor_Stop() {
-  /*
-    pwmWrite(RIGHTMOTORADVANCEPIN, 0);
-    pwmWrite(RIGHTMOTORREVERSEPIN, 0);
-    pwmWrite(LEFTMOTORADVANCEPIN, 0);
-    pwmWrite(LEFTMOTORREVERSEPIN, 0);
-  */
-  /* softPwmCreate(RIGHTMOTORADVANCEPIN,0,0);//advance */
-  /* softPwmCreate(RIGHTMOTORREVERSEPIN,0,0);//reverse */
-  /* softPwmCreate(LEFTMOTORADVANCEPIN, 0,0); //advance */
-  /* softPwmCreate(LEFTMOTORREVERSEPIN, 0,0);//reverse */
-
+  /* モータ出力停止 */
   softPwmWrite(RIGHTMOTORADVANCEPIN, PWMOUT0);
   softPwmWrite(RIGHTMOTORREVERSEPIN, PWMOUT0);
   softPwmWrite(LEFTMOTORADVANCEPIN, PWMOUT0);
@@ -310,33 +279,6 @@ int Motor_Stop() {
   return 0;
 }
 
-/* add hiraoka */
-/* int Motor_Init(motor_state_info *motor_state_left, */
-/* 	       motor_state_info *motor_state_right){ */
-/*   int error_check; */
-
-/*   motor_state_left->id  = MOTOR_LEFT; */
-/*   motor_state_right->id = MOTOR_RIGHT; */
-/*   error_check = NONEERROR; */
-
-/*   // left motor inti */
-/*   error_check = Motor_Init_Left(motor_state_left); */
-
-/*   if(error_check<0){ */
-/*     printf("Motor_Init_Left err %d\r\n",error_check); */
-/*     return -1; */
-/*   }else{ */
-/*     printf("Motor_Init_Left do\r\n"); */
-/*   } */
-/*   error_check = Motor_Init_Right(&motor_state_right); */
-/*   if(error_check<0){ */
-/*     return -2; */
-/*   }else{ */
-/*     printf("Motor_Init_Right do\r\n"); */
-/*   } */
-
-/*   return error_check; */
-/* } */
 void Command_Copy(Command_Info org, Command_Info *copy){
   copy->large_type     = org.large_type;
   copy->small_type     = org.small_type;
@@ -405,7 +347,7 @@ int Motor_main(Command_Info *command, Thread_Arg *thread_arg)
 	/* command copy */
 	Command_Copy(thread_arg->command, command);
 	new_command = 1;
-	printf("=== Get New Command ===\n");
+	printf("\n=== Get New Command ===\n");
       }
     }
     pthread_mutex_unlock(&thread_arg->mutex);
@@ -474,7 +416,7 @@ int Motor_main(Command_Info *command, Thread_Arg *thread_arg)
     }
     new_command = 0;
 
-    /* wait */
+    /* 制御周期まで待機 */
     interT.tv_nsec += interval; /*  */
     /* printf("interval:%d\n", interval); */
     /* printf("interT.tv_nsec:%ld\n", interT.tv_nsec); */
@@ -482,163 +424,7 @@ int Motor_main(Command_Info *command, Thread_Arg *thread_arg)
     clock_nanosleep(0, TIMER_ABSTIME, &interT, NULL); /* 渡した時間まで待つ */
 
   }
-  Motor_Stop();
+  /* Motor_Stop(); */
   return 0;
 }
-
-/*モータ制御のメイン処理を実施する。*/
-int Motor_main_old(Command_Info* command)
-{
-  int error_check;
-  int motor_index;
-  motor_state_info motor_state_left;
-  motor_state_info motor_state_right;
-
-  motor_state_left.id = MOTOR_LEFT;
-  motor_state_right.id = MOTOR_RIGHT;
-  error_check = NONEERROR;
-
-  // left motor inti
-  error_check = Motor_Init_Left(&motor_state_left);
-
-  if(error_check<0){
-    printf("Motor_Init_Left err %d\r\n",error_check);
-    return -1;
-  }else{
-    printf("Motor_Init_Left do\r\n");
-  }
-
-  error_check = NONEERROR;
-
-  // rught motor inti
-  error_check = Motor_Init_Right(&motor_state_right);
-  if(error_check<0){
-    return -2;
-  }else{
-    printf("Motor_Init_Right do\r\n");
-  }
-  error_check =    Motor_CommandCheck(command);
-
-  if (error_check != NONEERROR)
-    {
-      printf("Motor_CommandCheck err %d\r\n",error_check);
-      return -3;
-    	
-    }else{
-    error_check = Motor_Prepare(command,&motor_state_left);
-
-  }
-  printf("Motor_Prepare left do\r\n");	
-
-  if (error_check != NONEERROR)
-    {
-      printf("Motor_Prepare err %d\r\n",error_check);
-      return -4;
-    }else{}
-
-  error_check = Motor_Prepare(command,&motor_state_right);
-
-
-  printf("Motor_Prepare right do\r\n");	
-	
-  if (error_check != NONEERROR){
-    printf("Motor_Prepare err %d\r\n",error_check);
-    return -5;
-  }else{}
-	
-  //motor control do
-
-  printf("---------Motor_Output pre info----------\r\n");
-  printf("[motor_state_left] id = %u\r\n",motor_state_left.id);
-  printf("[motor_state_left] level = %u\r\n",motor_state_left.level);
-  printf("[motor_state_left] rotation_direction = %u\r\n",motor_state_left.rotation_direction);
-  printf("[motor_state_left] pwm_out_value = %u\r\n",motor_state_left.pwm_out_value);
-  printf("[motor_state_left] pwm_advance_pin = %u\r\n",motor_state_left.pwm_advance_pin);
-  printf("[motor_state_left] pwm_reverse_pin = %u\r\n",motor_state_left.pwm_reverse_pin);
-
-  printf("[motor_state_right] id = %u\r\n",motor_state_right.id);
-  printf("[motor_state_right] level = %u\r\n",motor_state_right.level);
-  printf("[motor_state_right] rotation_direction = %u\r\n",motor_state_right.rotation_direction);
-  printf("[motor_state_right] pwm_out_value = %u\r\n",motor_state_right.pwm_out_value);
-  printf("[motor_state_right] pwm_advance_pin = %u\r\n",motor_state_right.pwm_advance_pin);
-  printf("[motor_state_right] pwm_reverse_pin = %u\r\n",motor_state_right.pwm_reverse_pin);
-  printf("---------Motor_Output pre info----------\r\n");
-	
-	
-  error_check = Motor_Output(&motor_state_left, &motor_state_right);
-    
-  if(	error_check <0){
-    printf("Motor_Output ret = %d\r\n",error_check);
-  }else{
-    printf("Motor_Output OK\r\n");	
-  }
-  return 0;
-    
-}
-
-
-#if 0
-void main(){
-
-  printf("---------command set start----------\r\n");
-  int ret = 0;
-  Command_Info info;
-  char ctemp[3];
-  char cleft;
-  char cright;
-  printf("left right is ?\r\n");
-  scanf("%s",&ctemp);
-
-  cleft = ctemp[0];
-  cright = ctemp[1];
-  int cfin = 1;
-  char tmp[11]="M001134000\0";
-
-  int i=0;
-  info.large_type	=	tmp[i];
-  printf("Motor_Output large_type = %c tmp = %c\r\n",info.large_type, tmp[i]);
-  i++;
-  info.small_type	=	tmp[i];
-  printf("Motor_Output small_type = %c tmp = %c\r\n",info.small_type, tmp[i]);
-  i++;
-  info.spare3	=	tmp[i];
-  printf("Motor_Output spare3 = %c tmp = %c\r\n",info.spare3, tmp[i]);
-  i++;
-  info.left_command	=	cleft;
-  printf("Motor_Output left_command = %c tmp = %c\r\n",info.left_command, tmp[i]);
-  i++;
-  info.right_command	=	cright;
-  printf("Motor_Output right_command = %c tmp = %c\r\n",info.right_command, tmp[i]);
-  i++;
-  info.OP3	=	tmp[i];
-  printf("Motor_Output OP3 = %c tmp = %c\r\n",info.OP3, tmp[i]);
-  i++;
-  info.OP4	=	tmp[i];
-  printf("Motor_Output OP4 = %c tmp = %c\r\n",info.OP4, tmp[i]);
-  i++;
-  info.spare4	=	tmp[i];
-  printf("Motor_Output spare4 = %c tmp = %c\r\n",info.spare4, tmp[i]);
-  i++;
-  info.error_code1	=	tmp[i];
-  printf("Motor_Output error_code1 = %c tmp = %c\r\n",info.error_code1, tmp[i]);
-  i++;
-  info.error_code2	=	tmp[i];
-  printf("Motor_Output error_code2 = %c tmp = %c\r\n",info.error_code2, tmp[i]);
-
-  printf("---------command set fin----------\r\n");
-
-  if(wiringPiSetupGpio() == -1){
-    printf("---------wiringPiSetupGpio missing----------\r\n");
-    return;
-  }
-  ret = Motor_main(&info);
-
-  printf("Motor_main do ret =%d\r\n",ret);
-  printf("---------PLEASE input 0----------\r\n");
-  while(cfin){
-    scanf("%d",&cfin); 
-  };
-  printf("---------FINISH----------\r\n");
-}
-#endif
 

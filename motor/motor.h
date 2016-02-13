@@ -25,16 +25,16 @@
 
 /*出力レベル*/
 typedef enum
-{
+  {
     OUTLEVEL0 = 0,
     OUTLEVEL1,
     OUTLEVEL2,
     OUTLEVEL3,
-}LEVEL;
+  }LEVEL;
 
 /*エラーの種類*/
 typedef enum
-{
+  {
     NONEERROR = 0,
     COMMANDERROR,
     PREPAREERROR,
@@ -42,41 +42,41 @@ typedef enum
     PWMOUTCALCERROR,
     PWMOUTERROR,
     MAXERROR
-}ERR;
+  }ERR;
 
 /*モータID*/
 typedef enum 
-{
+  {
     MOTOR_LEFT = 0,
     MOTOR_RIGHT,
     MOTOR_MAX
-}MID;
+  }MID;
 
 /*モータ状態情報の構造体*/
 typedef struct
 {
-    unsigned short id;					//tt
-    unsigned short level;
-    unsigned short rotation_direction;
-    unsigned short pwm_out_value;
-    unsigned short pwm_advance_pin;		//tt
-	unsigned short pwm_reverse_pin;		//tt
+  unsigned short id;					//tt
+  unsigned short level;
+  unsigned short rotation_direction;
+  unsigned short pwm_out_value;
+  unsigned short pwm_advance_pin;		//tt
+  unsigned short pwm_reverse_pin;		//tt
 }motor_state_info;
 
 /*コマンド情報の構造体*/
 /*
   typedef struct{
-    char large_type;
-    char small_type;
-    char spare3;
-    char left_command;
-    char right_command;
-    char OP3;
-    char OP4;
-    char spare4;
-    char error_code1;
-    char error_code2;
-}Command_Info;
+  char large_type;
+  char small_type;
+  char spare3;
+  char left_command;
+  char right_command;
+  char OP3;
+  char OP4;
+  char spare4;
+  char error_code1;
+  char error_code2;
+  }Command_Info;
 */
 // int Motor_main(Command_Info* command);
 int Motor_main(Command_Info *command, Thread_Arg *thread_arg);
