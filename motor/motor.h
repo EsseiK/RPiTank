@@ -1,4 +1,5 @@
 /*.h予定*/
+#include <wiringPi.h>
 
 /*コマンドチェック用*/
 #define COMMANDCHECK_MIN 2
@@ -72,5 +73,9 @@ typedef struct{
     char spare4;
     char error_code1;
     char error_code2;
-}command_info;
+}Command_Info;
+
+int Motor_main(Command_Info* command);
+int Motor_Stop();
+
 /*.hここまで*/

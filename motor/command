@@ -1,0 +1,9 @@
+git clone git://git.drogon.net/wiringPi
+./build 
+
+gcc servo.c -o servo -lwiringPi
+sudo ./servo
+
+
+リモートデスクトップ
+sudo apt-get install xrdp
