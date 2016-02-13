@@ -80,7 +80,6 @@ typedef struct
 */
 // int Motor_main(Command_Info* command);
 int Motor_main(Command_Info *command, Thread_Arg *thread_arg);
-int Motor_main_old(Command_Info* command);
 int Motor_Stop();
 
 /*.h‚±‚±‚Ü‚Å*/

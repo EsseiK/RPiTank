@@ -12,7 +12,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #define PORT 9876 //サーバープログラムとポート番号を合わせてください
-#define RASS_IP "10.1.10.203"
+#define RASS_IP "192.168.158.23"
 
 int Socket_Send_Sock() {
 	// IP アドレス，ポート番号，ソケット，sockaddr_in 構造体
@@ -22,7 +22,7 @@ int Socket_Send_Sock() {
 	char *str;
 	int len;
 	// 各種パラメータ
-	char buffer[19] = "0pt4567M9073345678";
+	char buffer[19] = "0pt4567M9055345678";
 	buffer[0]  = 0x02; // STX
 	buffer[17] = 0x03; // EDX
 	len = strlen(buffer);
@@ -51,16 +51,7 @@ int Socket_Send_Sock() {
 		return(-1);
 	}
 	printf("%s に接続しました\n", destination);
-	//printf("右出力を入力してください\n");
-	//scanf("%s", str);
-	/*
-	printf("右出力を入力してください\n");
-	scanf("%s", str);
-	strcpy(&buffer[10],&str[0]);
-	printf("左出力を入力してください\n");
-	scanf("%s", str);
-	buffer[11] = str[0];
-	*/
+	printf("コマンド（18byte）を入力してください\n");
 	printf("buf %s\n, size: %lu, lne%lu\n", buffer, sizeof(buffer), strlen(buffer));
 	//while (1) {
 		scanf("%s", str);

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "command_anaysis.h"
+#include "command_analysis.h"
 
 Command_Info Sock_Command_Analysis(char *recv_data) {
   int i;
@@ -13,7 +13,6 @@ Command_Info Sock_Command_Analysis(char *recv_data) {
   switch(recv_data[7]) {
   case 'M':
     printf("Motor\n");
-  printf("??? : %s\n", recv_data);
     command.large_type     = recv_data[7];
     command.small_type     = recv_data[8];
     command.spare3         = recv_data[9];
@@ -24,7 +23,6 @@ Command_Info Sock_Command_Analysis(char *recv_data) {
     command.spare4         = recv_data[14];
     command.error_code1    = recv_data[15];
     command.error_code2    = recv_data[16];
-  printf("??? : %s\n", recv_data);
     break;
   case 'C':
     printf("Camera\n");

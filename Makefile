@@ -1,7 +1,7 @@
 CC = gcc
 CFLAG = -Wall -Wextra -02
-LDFLAGS = -pthread -lwiringPi
-SRCS = ./server/test.c ./server/make_new_thread.c ./server/thread_server.c ./server/server.c ./server/command_anaysis.c ./motor/motor.c
+LDFLAGS = -pthread -lrt -lwiringPi
+SRCS = ./test.c ./make_new_thread.c ./server/thread_server.c ./server/server.c ./server/command_analysis.c ./motor/motor.c ./motor/thread_motor.c
 OBJS = $(SRCS:.c=.o)
 TARGET = ./test
 
@@ -19,4 +19,6 @@ all: $(TARGET)
 
 clean:
 	$(RM) *.o
+	$(RM) ./motor/*.o
+	$(RM) ./server/*.o
 	$(RM) $(TARGET)

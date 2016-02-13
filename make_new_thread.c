@@ -2,6 +2,7 @@
 #include "./thread.h"
 
 extern void *Thread_Server(void *_thread_arg);
+extern void *Thread_Motor(void *_thread_arg);
 
 int make_new_thread(int thNum, pthread_t *thread, Thread_Arg *thread_arg) {
   pthread_attr_t attr; // set attribute of thread
@@ -12,7 +13,6 @@ int make_new_thread(int thNum, pthread_t *thread, Thread_Arg *thread_arg) {
 
   // mutex init
   pthread_mutex_init(&thread_arg->mutex, NULL);
-  printf("--- test1 ---\n");
 
   // init to default values
   if(pthread_attr_init(&attr)) {
@@ -28,16 +28,17 @@ int make_new_thread(int thNum, pthread_t *thread, Thread_Arg *thread_arg) {
   switch(thNum) {
   case 0:
     pthread_create(thread, &attr, Thread_Server, (void*) thread_arg);
-    printf("--- test2 ---\n");
+    printf("--- make server thread ---\n");
     break;
   case 1:
+    pthread_create(thread, &attr, Thread_Motor, (void*) thread_arg);
+    printf("--- make motor thread ---\n");
     break;
   default:
     puts("error of make thread");
     return -1;
     break;
   }
-  printf("--- test3 ---\n");
     return 0;
 }
 
