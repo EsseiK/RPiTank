@@ -2,6 +2,10 @@
 #define _THREAD_H
 
 #include <pthread.h>
+
+
+
+
 /*
 #include "./server/server.h"
 */
