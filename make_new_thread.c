@@ -3,6 +3,10 @@
 
 extern void *Thread_Server(void *_thread_arg);
 extern void *Thread_Motor(void *_thread_arg);
+// extern "C" void *Thread_Camera(void *_thread_arg);
+extern void *Thread_Camera(void *_thread_arg);
+
+int error(int at);
 
 int make_new_thread(int thNum, pthread_t *thread, Thread_Arg *thread_arg) {
   pthread_attr_t attr; // set attribute of thread
@@ -33,6 +37,10 @@ int make_new_thread(int thNum, pthread_t *thread, Thread_Arg *thread_arg) {
   case 1:
     pthread_create(thread, &attr, Thread_Motor, (void*) thread_arg);
     printf("--- make motor thread ---\n");
+    break;
+  case 2:
+    pthread_create(thread, &attr, Thread_Camera, (void*) thread_arg);
+    printf("--- make camera thread ---\n");
     break;
   default:
     puts("error of make thread");
