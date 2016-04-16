@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../thread.h"
+#include "./server.h"
 
 void *Thread_Server(void *_thread_arg) {
   Thread_Arg *thread_arg = (Thread_Arg*)_thread_arg;

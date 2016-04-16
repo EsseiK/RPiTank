@@ -1,8 +1,8 @@
 /*モータ制御*/
 #include <wiringPi.h>
+#include <softPwm.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>// needed for getrusage
 #include "motor.h"
 
 /*右モータPIN*/
@@ -10,8 +10,8 @@
 #define RIGHTMOTORREVERSEPIN  26      //後進
 
 /*左モータPIN*/
-#define LEFTMOTORADVANCEPIN 23      //前進
-#define LEFTMOTORREVERSEPIN  24      //後進
+#define LEFTMOTORADVANCEPIN  24      //前進
+#define LEFTMOTORREVERSEPIN  23      //後進
 
 #define CLOCK 400
 #define RANGE 1024
@@ -279,21 +279,6 @@ int Motor_Stop() {
   return 0;
 }
 
-void Command_Copy(Command_Info org, Command_Info *copy){
-  copy->large_type     = org.large_type;
-  copy->small_type     = org.small_type;
-  copy->spare3         = org.spare3;
-  copy->left_command   = org.left_command;
-  copy->right_command  = org.right_command;
-  copy->OP3            = org.OP3;
-  copy->OP4            = org.OP4;
-  copy->spare4         = org.spare4;
-  copy->error_code1    = org.error_code1;
-  copy->error_code2    = org.error_code2;
-}
-
-
-
 /*モータ制御のメイン処理を実施する。*/
 int Motor_main(Command_Info *command, Thread_Arg *thread_arg)
 {
@@ -346,8 +331,13 @@ int Motor_main(Command_Info *command, Thread_Arg *thread_arg)
       if(thread_arg->recv_flag == 1){
 	/* command copy */
 	Command_Copy(thread_arg->command, command);
-	new_command = 1;
-	printf("\n=== Get New Command ===\n");
+	if(command->large_type == 'M'){
+	  new_command = 1;
+	  thread_arg->recv_flag = 0;
+	  printf("\n=== Get New Motor Command ===\n");
+	} else {
+	  new_command = 0;
+	}
       }
     }
     pthread_mutex_unlock(&thread_arg->mutex);
